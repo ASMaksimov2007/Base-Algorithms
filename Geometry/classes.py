@@ -80,7 +80,6 @@ class Line:
             return (None, None)
 
         result = Point(0, 0)
-        print(zn)
 
         result.x = -det(self.c, self.b, other.c, other.b) / zn
         result.y = -det(self.a, self.c, other.a, other.c) / zn
@@ -101,8 +100,55 @@ def points_to_normal_line(point1, point2):
 class Segment:
     def __init__(self, point1, point2):
         self.start = point1
-        self.finish = point2
+        self.end = point2
+
+    def line(self):
+        return points_to_normal_line(self.start, self.end)
+
+    def contains(self, point):
+        if self.line().contains(point):
+            if any((max(self.start.y, self.end.y) < point.y,
+                    min(self.start.y, self.end.y) > point.y,
+                    max(self.start.x, self.end.x) < point.x,
+                    min(self.start.x, self.end.x) > point.x,
+                    )):
+                return False
+            else:
+                return True
+        else:
+            return False
+
+    def perpendicular(self, point):
+        return self.line().perpendicular(point)
+
+    def vector(self):
+        return vector_by_points(self.start, self.end)
+
+    def length(self):
+        return dist(self.start, self.end)
 
 
-def intersect(segm1, segm2):
-    pass
+def vector_to_ray(vector):
+    return Ray(Point(0, 0), Point(vector.x, vector.y))
+
+
+class Ray:
+    def __init__(self, point1, point2):
+        self.start = point1
+        self.direction = point2
+
+    def line(self):
+        return points_to_normal_line(self.start, self.direction)
+
+    def vector(self):
+        return vector_by_points(self.start, self.direction)
+
+    def perpendicular(self, point):
+        return self.line().perpendicular(point)
+
+    def contains(self, point):
+        return all((
+            self.line().contains(point),
+            (point.x - self.start.x) * (self.direction.x - self.start.x) >= 0,
+            (point.y - self.start.y) * (self.direction.y - self.start.y) >= 0,
+        ))
